@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Diccionario de Prompts — Herramienta de administración para gestionar y organizar prompts de inteligencia artificial por categorías.">
+  <title>Diccionario de Prompts | Administrador</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+</head>
+<body>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="navbar" id="navbar">
+    <a href="#" class="navbar-brand">
+      <div class="navbar-logo">📖</div>
+      <div>
+        <div class="navbar-title">Diccionario de Prompts</div>
+        <div class="navbar-subtitle">Administrador</div>
+      </div>
+    </a>
+    <div class="navbar-actions">
+      <span class="pulse-dot" id="connectionDot" title="Estado de conexión"></span>
+      <div class="theme-toggle" id="themeToggle" title="Cambiar tema" role="button" tabindex="0" aria-label="Cambiar entre modo claro y oscuro">
+        <div class="theme-toggle-knob">
+          <span id="themeIcon">☀️</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <main class="main-container">
+
+    <!-- Stats Bar -->
+    <section class="stats-bar fade-in" id="statsBar">
+      <div class="stat-card">
+        <div class="stat-label">Total Prompts</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Categorías</div>
+        <div class="stat-value" id="statCategories">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Mostrando</div>
+        <div class="stat-value" id="statFiltered">0</div>
+      </div>
+    </section>
+
+    <!-- Toolbar -->
+    <section class="toolbar">
+      <div class="toolbar-left">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Buscar prompts..."
+            autocomplete="off"
+            aria-label="Buscar prompts"
+          >
+        </div>
+        <select class="filter-select" id="categoryFilter" aria-label="Filtrar por categoría">
+          <option value="">Todas las categorías</option>
+        </select>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-secondary" id="btnRefresh" title="Recargar datos">
+          🔄 Recargar
+        </button>
+        <button class="btn btn-primary" id="btnCreate" title="Crear nuevo prompt">
+          ➕ Nuevo Prompt
+        </button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="table-container fade-in" id="tableContainer">
+      <div class="table-wrapper">
+        <table class="prompts-table" id="promptsTable">
+          <thead>
+            <tr>
+              <th>Categoría</th>
+              <th>Nombre</th>
+              <th>Prompt</th>
+              <th>Ejemplos</th>
+              <th>Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-state-icon">📝</div>
+        <h2 class="empty-state-title">No hay prompts todavía</h2>
+        <p class="empty-state-text">Comienza agregando tu primer prompt. Organiza y gestiona todos tus prompts de IA en un solo lugar.</p>
+        <button class="btn btn-primary" id="btnEmptyCreate">➕ Crear primer prompt</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══ CREATE/EDIT MODAL ═══ -->
+  <div class="modal-overlay" id="formModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Nuevo Prompt</h2>
+        <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="promptForm" autocomplete="off">
+          <input type="hidden" id="formId">
+
+          <div class="form-group">
+            <label class="form-label" for="formCategoria">
+              Categoría <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              class="form-input"
+              id="formCategoria"
+              list="categoriasList"
+              placeholder="Ej: Marketing, Desarrollo, Ventas..."
+              required
+            >
+            <datalist id="categoriasList"></datalist>
+            <p class="form-hint">Selecciona una existente o escribe una nueva categoría</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="formNombre">
+              Nombre del Prompt <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              class="form-input"
+              id="formNombre"
+              placeholder="Ej: Generador de Emails"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="formPrompt">
+              Prompt <span class="required">*</span>
+            </label>
+            <textarea
+              class="form-textarea"
+              id="formPrompt"
+              placeholder="Escribe el texto completo del prompt..."
+              rows="5"
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="formEjemplos">
+              Ejemplos
+            </label>
+            <textarea
+              class="form-textarea"
+              id="formEjemplos"
+              placeholder="Agrega ejemplos de uso del prompt..."
+              rows="4"
+            ></textarea>
+            <p class="form-hint">Opcional — Agrega ejemplos para ilustrar cómo usar el prompt</p>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancel">Cancelar</button>
+        <button class="btn btn-primary" id="btnSave">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW MODAL ═══ -->
+  <div class="modal-overlay" id="viewModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="viewModalTitle">Detalle del Prompt</h2>
+        <button class="modal-close" id="viewModalClose" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="view-content" id="viewContent">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnViewClose">Cerrar</button>
+        <button class="btn btn-primary" id="btnViewEdit">✏️ Editar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONFIRM DELETE MODAL ═══ -->
+  <div class="modal-overlay confirm-modal" id="confirmModal">
+    <div class="modal">
+      <div class="modal-body" style="padding-top: 32px;">
+        <div class="confirm-icon">⚠️</div>
+        <p class="confirm-text" id="confirmText">
+          ¿Estás seguro de que deseas eliminar el prompt <strong id="confirmName"></strong>?<br>
+          Esta acción no se puede deshacer.
+        </p>
+        <div class="confirm-actions">
+          <button class="btn btn-secondary" id="btnConfirmCancel">Cancelar</button>
+          <button class="btn btn-danger" id="btnConfirmDelete">🗑️ Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LOADER ═══ -->
+  <div class="loader-overlay" id="loader">
+    <div class="spinner"></div>
+    <div class="loader-text" id="loaderText">Cargando prompts...</div>
+  </div>
+
+  <!-- ═══ TOAST CONTAINER ═══ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
